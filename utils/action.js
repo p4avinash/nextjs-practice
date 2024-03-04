@@ -2,6 +2,7 @@
 import prisma from "@/utils/db"
 import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
+import { z } from "zod"
 
 //server action to get all the tasks
 export const getAllTasks = async () => {
@@ -26,16 +27,23 @@ export const createTask = async (formData) => {
 }
 
 //server action to delete a task
-export const deleteTask = async (formData) => {
+export const deleteTask = async (prevState, formData) => {
   const id = formData.get("delete-btn")
 
-  await prisma.task.delete({
-    where: {
-      id: id,
-    },
-  })
+  try {
+    await prisma.task.delete({
+      where: {
+        id: id,
+      },
+    })
 
-  revalidatePath("/tasks")
+    revalidatePath("/tasks")
+    return { message: "Success" }
+  } catch (error) {
+    return {
+      message: error.message ? error.errors[0].message : "Something went wrong",
+    }
+  }
 }
 
 //server action to update a task
@@ -64,4 +72,31 @@ export const editTask = async (formData) => {
   })
 
   redirect("/tasks")
+}
+
+export const createTaskCustom = async (prevState, formData) => {
+  // await new Promise((resolve) => setTimeout(resolve, 2000))
+  const contentField = formData.get("content-field")
+
+  const TaskValidation = z.object({
+    contentField: z.string().min(5),
+  })
+
+  try {
+    TaskValidation.parse({ contentField })
+    await prisma.task.create({
+      data: {
+        content: contentField,
+      },
+    })
+
+    revalidatePath("/tasks")
+
+    return { message: "Success" }
+  } catch (error) {
+    // console.log(error.errors[0].message)
+    return {
+      message: error.message ? error.errors[0].message : "Something went wrong",
+    }
+  }
 }
