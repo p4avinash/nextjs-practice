@@ -19,7 +19,6 @@ const initialState = {
 
 const DeleteForm = ({ id }) => {
   const [state, formAction] = useFormState(deleteTask, initialState)
-  console.log("state", state)
 
   useEffect(() => {
     if (state.message === "Success") {

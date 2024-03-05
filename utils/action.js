@@ -3,6 +3,7 @@ import prisma from "@/utils/db"
 import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
 import { z } from "zod"
+import toast from "react-hot-toast"
 
 //server action to get all the tasks
 export const getAllTasks = async () => {
@@ -38,6 +39,7 @@ export const deleteTask = async (prevState, formData) => {
     })
 
     revalidatePath("/tasks")
+
     return { message: "Success" }
   } catch (error) {
     return {
